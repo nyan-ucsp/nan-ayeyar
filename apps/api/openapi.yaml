@@ -1,0 +1,1015 @@
+openapi: 3.0.3
+info:
+  title: Nan Ayeyar API
+  description: E-commerce API for rice trading platform
+  version: 1.0.0
+  contact:
+    name: Nan Ayeyar Support
+    email: support@nanayeyar.com
+
+servers:
+  - url: http://localhost:3001/api
+    description: Development server
+  - url: https://api.nanayeyar.com/api
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+paths:
+  # Authentication endpoints
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register new user
+      description: Creates a new user account and sends OTP for email verification
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - name
+                - address
+                - locale
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                name:
+                  type: string
+                  example: John Doe
+                address:
+                  type: string
+                  example: 123 Main St, Yangon, Myanmar
+                locale:
+                  type: string
+                  enum: [en, my]
+                  default: en
+                  example: en
+      responses:
+        '201':
+          description: User registered successfully, OTP sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: User registered successfully. Please check your email for OTP.
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Validation error or user already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/verify-otp:
+    post:
+      tags:
+        - Authentication
+      summary: Verify OTP
+      description: Verifies OTP code and returns JWT token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - otp
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                otp:
+                  type: string
+                  pattern: '^[0-9]{6}$'
+                  example: "123456"
+      responses:
+        '200':
+          description: OTP verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: OTP verified successfully
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid or expired OTP
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login user
+      description: Authenticates user with email and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  example: password123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Login successful
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/request-otp:
+    post:
+      tags:
+        - Authentication
+      summary: Request OTP
+      description: Sends a new OTP to user's email
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+      responses:
+        '200':
+          description: OTP sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: OTP sent successfully
+        '400':
+          description: User not found or rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Product endpoints
+  /products:
+    get:
+      tags:
+        - Products
+      summary: Get products
+      description: Get paginated list of products with optional locale filtering
+      security: []
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Items per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: locale
+          in: query
+          description: Language preference
+          schema:
+            type: string
+            enum: [en, my]
+            default: en
+        - name: search
+          in: query
+          description: Search term
+          schema:
+            type: string
+        - name: outOfStock
+          in: query
+          description: Filter by stock status
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /products/{id}:
+    get:
+      tags:
+        - Products
+      summary: Get product by ID
+      description: Get detailed product information
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Product ID
+          schema:
+            type: string
+        - name: locale
+          in: query
+          description: Language preference
+          schema:
+            type: string
+            enum: [en, my]
+            default: en
+      responses:
+        '200':
+          description: Product retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  product:
+                    $ref: '#/components/schemas/ProductDetail'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Admin product endpoints
+  /admin/products:
+    post:
+      tags:
+        - Admin - Products
+      summary: Create product
+      description: Create a new product (admin only)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - name_en
+                - price
+              properties:
+                sku:
+                  type: string
+                  example: RICE-001
+                name_en:
+                  type: string
+                  example: Premium Jasmine Rice
+                name_my:
+                  type: string
+                  example: ဂျ်မင်းဆန်
+                description_en:
+                  type: string
+                  example: High quality jasmine rice
+                description_my:
+                  type: string
+                  example: အရည်အသွေးမြင့်ဂျ်မင်းဆန်
+                price:
+                  type: number
+                  format: decimal
+                  example: 2500.00
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                metadata:
+                  type: object
+                  example:
+                    variety: "Jasmine"
+                    grade: "Premium"
+                    weight: "5kg"
+                    harvest_date: "2024-01-15"
+      responses:
+        '201':
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Product created successfully
+                  product:
+                    $ref: '#/components/schemas/Product'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/products/{id}:
+    patch:
+      tags:
+        - Admin - Products
+      summary: Update product
+      description: Update product information (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Product ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name_en:
+                  type: string
+                name_my:
+                  type: string
+                description_en:
+                  type: string
+                description_my:
+                  type: string
+                price:
+                  type: number
+                  format: decimal
+                disabled:
+                  type: boolean
+                outOfStock:
+                  type: boolean
+                allowSellWithoutStock:
+                  type: boolean
+                metadata:
+                  type: object
+      responses:
+        '200':
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Product updated successfully
+                  product:
+                    $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/stock:
+    post:
+      tags:
+        - Admin - Stock
+      summary: Add stock entry
+      description: Add stock entry for a product (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - productId
+                - quantity
+                - purchasePrice
+              properties:
+                productId:
+                  type: string
+                  example: clr1234567890
+                quantity:
+                  type: integer
+                  minimum: 1
+                  example: 100
+                purchasePrice:
+                  type: number
+                  format: decimal
+                  example: 2000.00
+      responses:
+        '201':
+          description: Stock entry created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Stock entry created successfully
+                  stockEntry:
+                    $ref: '#/components/schemas/StockEntry'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Order endpoints
+  /orders:
+    post:
+      tags:
+        - Orders
+      summary: Create order
+      description: Create a new order (authenticated customer)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - items
+                - shippingAddress
+                - paymentType
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - productId
+                      - quantity
+                    properties:
+                      productId:
+                        type: string
+                      quantity:
+                        type: integer
+                        minimum: 1
+                shippingAddress:
+                  type: object
+                  required:
+                    - name
+                    - address
+                    - phone
+                  properties:
+                    name:
+                      type: string
+                    address:
+                      type: string
+                    phone:
+                      type: string
+                paymentType:
+                  type: string
+                  enum: [COD, ONLINE_TRANSFER]
+                paymentMethodId:
+                  type: string
+                  description: Required for ONLINE_TRANSFER
+                transactionId:
+                  type: string
+                  description: Required for ONLINE_TRANSFER
+                paymentScreenshot:
+                  type: string
+                  description: Optional screenshot path for ONLINE_TRANSFER
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Order created successfully
+                  order:
+                    $ref: '#/components/schemas/Order'
+        '400':
+          description: Validation error or insufficient stock
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /orders/{id}:
+    get:
+      tags:
+        - Orders
+      summary: Get order by ID
+      description: Get order details (owner or admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Order ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Order retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  order:
+                    $ref: '#/components/schemas/OrderDetail'
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/orders/{id}/status:
+    patch:
+      tags:
+        - Admin - Orders
+      summary: Update order status
+      description: Update order status (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Order ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [PENDING, PROCESSING, ON_HOLD, SHIPPED, DELIVERED, CANCELED, RETURNED, REFUNDED]
+      responses:
+        '200':
+          description: Order status updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Order status updated successfully
+                  order:
+                    $ref: '#/components/schemas/Order'
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Payment method endpoints
+  /users/payment-methods:
+    get:
+      tags:
+        - Payment Methods
+      summary: Get user payment methods
+      description: Get list of user's payment methods
+      responses:
+        '200':
+          description: Payment methods retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  paymentMethods:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PaymentMethod'
+
+    post:
+      tags:
+        - Payment Methods
+      summary: Add payment method
+      description: Add a new payment method for the user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - details
+              properties:
+                type:
+                  type: string
+                  enum: [AYA_BANK, KBZ_BANK, AYA_PAY, KBZ_PAY]
+                details:
+                  type: object
+                  properties:
+                    accountName:
+                      type: string
+                    accountNumber:
+                      type: string
+                    phoneNumber:
+                      type: string
+      responses:
+        '201':
+          description: Payment method added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Payment method added successfully
+                  paymentMethod:
+                    $ref: '#/components/schemas/PaymentMethod'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: clr1234567890
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        name:
+          type: string
+          example: John Doe
+        address:
+          type: string
+          example: 123 Main St, Yangon, Myanmar
+        locale:
+          type: string
+          enum: [en, my]
+          example: en
+        role:
+          type: string
+          enum: [customer, admin]
+          example: customer
+        isEmailVerified:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          example: clr1234567890
+        sku:
+          type: string
+          example: RICE-001
+        name:
+          type: string
+          example: Premium Jasmine Rice
+        description:
+          type: string
+          example: High quality jasmine rice
+        images:
+          type: array
+          items:
+            type: string
+          example: ["/uploads/rice-1.jpg", "/uploads/rice-2.jpg"]
+        price:
+          type: number
+          format: decimal
+          example: 2500.00
+        disabled:
+          type: boolean
+          example: false
+        outOfStock:
+          type: boolean
+          example: false
+        allowSellWithoutStock:
+          type: boolean
+          example: true
+        metadata:
+          type: object
+          example:
+            variety: "Jasmine"
+            grade: "Premium"
+            weight: "5kg"
+            harvest_date: "2024-01-15"
+        totalStock:
+          type: integer
+          example: 150
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ProductDetail:
+      allOf:
+        - $ref: '#/components/schemas/Product'
+        - type: object
+          properties:
+            stockEntries:
+              type: array
+              items:
+                $ref: '#/components/schemas/StockEntry'
+
+    StockEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          example: clr1234567890
+        productId:
+          type: string
+          example: clr1234567890
+        quantity:
+          type: integer
+          example: 100
+        purchasePrice:
+          type: number
+          format: decimal
+          example: 2000.00
+        createdAt:
+          type: string
+          format: date-time
+
+    PaymentMethod:
+      type: object
+      properties:
+        id:
+          type: string
+          example: clr1234567890
+        userId:
+          type: string
+          example: clr1234567890
+        type:
+          type: string
+          enum: [AYA_BANK, KBZ_BANK, AYA_PAY, KBZ_PAY]
+          example: AYA_BANK
+        details:
+          type: object
+          example:
+            accountName: "John Doe"
+            accountNumber: "1234567890"
+        createdAt:
+          type: string
+          format: date-time
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          example: clr1234567890
+        userId:
+          type: string
+          example: clr1234567890
+        status:
+          type: string
+          enum: [PENDING, PROCESSING, ON_HOLD, SHIPPED, DELIVERED, CANCELED, RETURNED, REFUNDED]
+          example: PENDING
+        paymentType:
+          type: string
+          enum: [COD, ONLINE_TRANSFER]
+          example: ONLINE_TRANSFER
+        paymentMethodId:
+          type: string
+          example: clr1234567890
+        totalAmount:
+          type: number
+          format: decimal
+          example: 5000.00
+        shippingAddress:
+          type: object
+          example:
+            name: "John Doe"
+            address: "123 Main St, Yangon, Myanmar"
+            phone: "+959123456789"
+        transactionId:
+          type: string
+          example: TXN123456789
+        paymentScreenshot:
+          type: string
+          example: "/uploads/payment-screenshot.jpg"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    OrderDetail:
+      allOf:
+        - $ref: '#/components/schemas/Order'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/OrderItem'
+            user:
+              $ref: '#/components/schemas/User'
+            paymentMethod:
+              $ref: '#/components/schemas/PaymentMethod'
+            refunds:
+              type: array
+              items:
+                $ref: '#/components/schemas/Refund'
+
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: string
+          example: clr1234567890
+        orderId:
+          type: string
+          example: clr1234567890
+        productId:
+          type: string
+          example: clr1234567890
+        unitPrice:
+          type: number
+          format: decimal
+          example: 2500.00
+        quantity:
+          type: integer
+          example: 2
+        metadata:
+          type: object
+          example:
+            variety: "Jasmine"
+            grade: "Premium"
+            weight: "5kg"
+
+    Refund:
+      type: object
+      properties:
+        id:
+          type: string
+          example: clr1234567890
+        orderId:
+          type: string
+          example: clr1234567890
+        amount:
+          type: number
+          format: decimal
+          example: 5000.00
+        refundedAt:
+          type: string
+          format: date-time
+        reason:
+          type: string
+          example: "Customer requested refund"
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 100
+        pages:
+          type: integer
+          example: 5
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Validation error"
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string

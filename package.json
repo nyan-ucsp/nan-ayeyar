@@ -1,0 +1,31 @@
+{
+  "name": "nan-ayeyar",
+  "version": "1.0.0",
+  "description": "E-commerce platform for rice trading with admin panel",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:ecommerce\" \"npm run dev:admin\"",
+    "dev:api": "npm run dev --workspace=@nan-ayeyar/api",
+    "dev:ecommerce": "npm run dev --workspace=@nan-ayeyar/ecommerce",
+    "dev:admin": "npm run dev --workspace=@nan-ayeyar/admin",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "type-check": "npm run type-check --workspaces",
+    "db:migrate": "npm run db:migrate --workspace=@nan-ayeyar/api",
+    "db:seed": "npm run db:seed --workspace=@nan-ayeyar/api",
+    "db:reset": "npm run db:reset --workspace=@nan-ayeyar/api"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

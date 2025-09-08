@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>အီးမေးလ်အတည်ပြုရန် - {{siteName}}</title>
+    <style>
+        body {
+            font-family: 'Noto Sans Myanmar', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: #0ea5e9;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 10px 0;
+        }
+        .subtitle {
+            color: #6b7280;
+            font-size: 16px;
+            margin: 0;
+        }
+        .otp-container {
+            background: #f0f9ff;
+            border: 2px solid #0ea5e9;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .otp-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        .otp-code {
+            font-size: 32px;
+            font-weight: 700;
+            color: #0ea5e9;
+            letter-spacing: 8px;
+            margin: 0;
+            font-family: 'Courier New', monospace;
+        }
+        .content {
+            margin: 30px 0;
+        }
+        .content p {
+            margin: 0 0 15px 0;
+            color: #4b5563;
+        }
+        .warning {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+        .warning-text {
+            color: #92400e;
+            font-size: 14px;
+            margin: 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        .support {
+            color: #0ea5e9;
+            text-decoration: none;
+        }
+        .support:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🌾</div>
+            <h1 class="title">{{siteName}}</h1>
+            <p class="subtitle">အရည်အသွေးမြင့် ဆန်များ</p>
+        </div>
+
+        <div class="otp-container">
+            <div class="otp-label">သင့်အတည်ပြုကုဒ်မှာ:</div>
+            <div class="otp-code">{{otp}}</div>
+        </div>
+
+        <div class="content">
+            <p>{{siteName}} သို့ ကြိုဆိုပါတယ်! ကျွန်ုပ်တို့၏ ဆန်ချစ်သူများ အသိုင်းအဝိုင်းတွင် ပါဝင်ရန် ပျော်ရွှင်ပါတယ်။</p>
+            
+            <p>သင့်အကောင့်ကို ပြီးမြောက်စေရန်၊ အထက်ပါ အတည်ပြုကုဒ်ကို အက်ပ်ထဲတွင် ရိုက်ထည့်ပါ။ ဤကုဒ်သည် သင့်လုံခြုံရေးအတွက် <strong>{{expiryMinutes}} မိနစ်</strong> အတွင်း သက်တမ်းကုန်ဆုံးမည်။</p>
+            
+            <p>သင်သည် ကျွန်ုပ်တို့နှင့် အကောင့်မဖွင့်ခဲ့ပါက၊ ဤအီးမေးလ်ကို လျစ်လျူရှုပါ။</p>
+        </div>
+
+        <div class="warning">
+            <p class="warning-text">
+                <strong>လုံခြုံရေး အကြံပြုချက်:</strong> ဤကုဒ်ကို မည်သူနှင့်မျှ မျှဝေပါနှင့်။ {{siteName}} သည် သင့်အတည်ပြုကုဒ်ကို ဖုန်းသို့မဟုတ် အီးမေးလ်ဖြင့် တောင်းဆိုမည်မဟုတ်ပါ။
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>ဤအီးမေးလ်ကို သင့်အကောင့် မှတ်ပုံတင်ခြင်းကို အတည်ပြုရန် ပို့ပေးပါသည်။</p>
+            <p>မေးခွန်းများ ရှိပါက၊ ကျေးဇူးပြု၍ <a href="mailto:support@nanayeyar.com" class="support">support@nanayeyar.com</a> သို့ ဆက်သွယ်ပါ။</p>
+            <p>&copy; 2024 {{siteName}}။ မူပိုင်ခွင့်အားလုံး ရှိပါသည်။</p>
+        </div>
+    </div>
+</body>
+</html>

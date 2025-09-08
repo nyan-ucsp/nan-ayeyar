@@ -1,0 +1,17 @@
+{{siteName}} - Email Verification
+
+Welcome to {{siteName}}! We're excited to have you join our community of rice enthusiasts.
+
+Your verification code is: {{otp}}
+
+To complete your registration, please enter this code in the app. This code will expire in {{expiryMinutes}} minutes for your security.
+
+If you didn't create an account with us, please ignore this email.
+
+Security Tip: Never share this code with anyone. {{siteName}} will never ask for your verification code via phone or email.
+
+---
+This email was sent to verify your account registration.
+If you have any questions, please contact us at support@nanayeyar.com
+
+© 2024 {{siteName}}. All rights reserved.

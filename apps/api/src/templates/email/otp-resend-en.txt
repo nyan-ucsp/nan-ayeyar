@@ -1,0 +1,19 @@
+{{siteName}} - New Verification Code
+
+We've generated a new verification code for your {{siteName}} account.
+
+Your new verification code is: {{otp}}
+
+Please enter this code in the app to complete your email verification. This code will expire in {{expiryMinutes}} minutes for your security.
+
+If you didn't request a new verification code, please ignore this email and contact our support team.
+
+Note: This new code replaces any previous verification codes. Only the most recent code will be valid.
+
+Security Tip: Never share this code with anyone. {{siteName}} will never ask for your verification code via phone or email.
+
+---
+This email was sent because you requested a new verification code.
+If you have any questions, please contact us at support@nanayeyar.com
+
+© 2024 {{siteName}}. All rights reserved.
