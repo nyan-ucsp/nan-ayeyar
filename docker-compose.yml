@@ -1,0 +1,85 @@
+services:
+  pgadmin4:
+    container_name: pgadmin4
+    image: elestio/pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_LISTEN_PORT: 9090
+    ports:
+      - "9080:9090"
+    volumes:
+      - pgadmin4_data:/pgadmin4
+      - pgadmin4lib_data:/var/lib/pgadmin
+    restart: unless-stopped
+
+  db:
+    container_name: nan-ayeyar-db
+    image: postgres:15
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=nan_ayeyar
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - nan-ayeyar-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nan_ayeyar"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: nanayeyar/nan-ayeyar-api:latest
+    container_name: nan-ayeyar-api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/nan_ayeyar?schema=public
+      - CORS_ORIGIN=*
+    ports:
+      - "3001:3001"
+    volumes:
+      - api-storage:/app/storage
+    restart: unless-stopped
+
+  admin:
+    image: nanayeyar/nan-ayeyar-admin:latest
+    container_name: nan-ayeyar-admin
+    depends_on:
+      - api
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - NEXT_PUBLIC_API_URL=http://api:3001
+      - NEXT_PUBLIC_ADMIN_APP_NAME=Nan Ayeyar Admin
+    ports:
+      - "3002:3002"
+    restart: unless-stopped
+
+  ecommerce:
+    image: nanayeyar/nan-ayeyar-ecommerce:latest
+    container_name: nan-ayeyar-ecommerce
+    depends_on:
+      - api
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - NEXT_PUBLIC_API_URL=http://api:3001
+      - NEXT_PUBLIC_APP_NAME=Nan Ayeyar
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+volumes:
+  api-storage:
+  pgadmin4_data:
+  pgadmin4lib_data:
+  nan-ayeyar-db-data:
+
+
