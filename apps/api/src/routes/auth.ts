@@ -6,7 +6,7 @@ import { PrismaClient } from '@prisma/client';
 import { sendEmail, getOTPEmailTemplate } from '../utils/email';
 import { generateOTP, hashOTP, verifyOTP, getOTPExpiry, isOTPExpired } from '../utils/otp';
 import { authenticate, AuthRequest } from '../middleware/auth';
-import { otpRateLimit, authRateLimit } from '../middleware/rateLimiter';
+// Rate limiting removed
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -15,7 +15,7 @@ const prisma = new PrismaClient();
  * Register new user
  * Creates user account and sends OTP for email verification
  */
-router.post('/register', otpRateLimit, [
+router.post('/register', [
   body('email').isEmail().normalizeEmail(),
   body('name').notEmpty().trim(),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
@@ -189,7 +189,7 @@ router.post('/register', otpRateLimit, [
  * Verify OTP and complete registration
  * Verifies OTP code and returns JWT token
  */
-router.post('/verify-otp', otpRateLimit, [
+router.post('/verify-otp', [
   body('email').isEmail().normalizeEmail(),
   body('otp').matches(/^[0-9]{6}$/).withMessage('OTP must be 6 digits'),
 ], async (req: Request, res: Response) => {
@@ -328,7 +328,7 @@ router.post('/verify-otp', otpRateLimit, [
  * Login with email and password
  * Authenticates user and returns JWT token
  */
-router.post('/login', authRateLimit, [
+router.post('/login', [
   body('email').isEmail().normalizeEmail(),
   body('password').notEmpty(),
 ], async (req: Request, res: Response) => {
@@ -405,7 +405,7 @@ router.post('/login', authRateLimit, [
  * Request new OTP
  * Sends a new OTP to user's email
  */
-router.post('/request-otp', otpRateLimit, [
+router.post('/request-otp', [
   body('email').isEmail().normalizeEmail(),
 ], async (req: Request, res: Response) => {
   try {
@@ -521,7 +521,7 @@ router.get('/me', authenticate, async (req: any, res) => {
  * Forgot Password
  * Send password reset OTP to user's email
  */
-router.post('/forgot-password', otpRateLimit, [
+router.post('/forgot-password', [
   body('email').isEmail().normalizeEmail(),
 ], async (req: Request, res: Response) => {
   try {
@@ -598,7 +598,7 @@ router.post('/forgot-password', otpRateLimit, [
  * Reset Password
  * Reset password using OTP verification
  */
-router.post('/reset-password', otpRateLimit, [
+router.post('/reset-password', [
   body('email').isEmail().normalizeEmail(),
   body('otp').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits'),
   body('newPassword')

@@ -162,16 +162,12 @@ export const validateCompanyAccountDetails = (
   switch (type) {
     case 'AYA_BANK':
     case 'KBZ_BANK':
-      if (!details.branch) {
-        errors.push('Branch is required for bank accounts');
-      }
+      // Branch is optional in admin UI; don't require it
       break;
     
     case 'AYA_PAY':
     case 'KBZ_PAY':
-      if (!details.phone) {
-        errors.push('Phone number is required for mobile payment accounts');
-      }
+      // Phone number is optional for mobile payment accouns
       break;
   }
 

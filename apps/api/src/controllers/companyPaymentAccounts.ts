@@ -240,7 +240,11 @@ export const updateCompanyPaymentAccount = async (req: Request, res: Response) =
     const updateData: any = {};
     if (name !== undefined) updateData.name = name;
     if (type !== undefined) updateData.type = type;
-    if (details !== undefined) updateData.details = details;
+    if (details !== undefined) {
+      // Merge details to avoid wiping fields not provided by admin UI
+      const mergedDetails = { ...(existingAccount.details as any || {}), ...(details as any) };
+      updateData.details = mergedDetails;
+    }
     if (enabled !== undefined) updateData.enabled = enabled;
 
     const account = await prisma.companyPaymentAccount.update({

@@ -22,7 +22,6 @@ import onlineTransferOrderRoutes from './routes/onlineTransferOrders';
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
 import { notFound } from './middleware/notFound';
-import { apiRateLimit } from './middleware/rateLimiter';
 
 // Load environment variables
 dotenv.config();
@@ -45,14 +44,19 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// General API rate limiting
-app.use(apiRateLimit);
+// Rate limiting removed
 
 // CORS configuration
 app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'https://nanayeyar.nxera.top',
-    process.env.ADMIN_URL || 'https://nanayeyaradmin.nxera.top'
+    process.env.ADMIN_URL || 'https://nanayeyaradmin.nxera.top',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:3002',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001',
+    'http://127.0.0.1:3002'
   ],
   credentials: true,
 }));

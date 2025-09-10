@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Package } from 'lucide-react';
 
 interface ProductImageProps {
@@ -16,6 +16,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
+  const imgRef = useRef<HTMLImageElement | null>(null);
 
   const handleImageError = () => {
     setImageError(true);
@@ -26,10 +27,20 @@ const ProductImage: React.FC<ProductImageProps> = ({
     setImageLoading(false);
   };
 
-  // Reset error state when src changes
+  // Reset error state when src changes and handle cached images
   useEffect(() => {
     setImageError(false);
     setImageLoading(true);
+    const img = imgRef.current;
+    if (img && img.complete) {
+      // If the image was loaded from cache before handlers attached
+      if (img.naturalWidth === 0) {
+        setImageError(true);
+        setImageLoading(false);
+      } else {
+        setImageLoading(false);
+      }
+    }
   }, [src]);
 
   if (!src || imageError) {
@@ -48,11 +59,14 @@ const ProductImage: React.FC<ProductImageProps> = ({
         </div>
       )}
       <img
+        ref={imgRef}
         src={src}
         alt={alt}
         className={`w-full h-full object-cover ${imageLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-200`}
         onError={handleImageError}
         onLoad={handleImageLoad}
+        loading="lazy"
+        decoding="async"
       />
     </div>
   );
