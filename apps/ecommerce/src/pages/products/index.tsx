@@ -148,14 +148,24 @@ const ProductsPage: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const riceVarieties = [
-    'Jasmine',
-    'Basmati',
-    'Arborio',
-    'Brown Rice',
-    'Wild Rice',
-    'Sticky Rice',
+  const defaultVarieties = [
+    'Paw San',
+    'Sinthukha',
+    'Manawthukha',
+    'Ayeyarmin',
+    'Ngasein',
+    'Emata',
+    'Red Rice',
+    'Kyauknyin',
+    '90-Days',
   ];
+
+  const envVarieties = (process.env.NEXT_PUBLIC_RICE_VARIETIES || '')
+    .split(',')
+    .map(v => v.trim())
+    .filter(Boolean);
+
+  const riceVarieties = envVarieties.length > 0 ? envVarieties : defaultVarieties;
 
   
 
