@@ -1,6 +1,123 @@
 # NAN AYEYAR RICE ORDER MANAGEMENT SYSTEM
 ## Comprehensive Documentation
 
+## Flowcharts
+
+### Customer Flow - Browse & Authentication
+
+```mermaid
+flowchart TD
+  start(Start)
+  cont(Continue to Payment)
+  start --> A[Visit Storefront]
+  A --> B[Browse Products]
+  B --> C[Apply Filters: search, variety, price, stock]
+  C --> D[View Product Details]
+  D --> E[Add to Cart]
+  E --> F[Open Cart]
+  F --> G[Proceed to Checkout]
+  G --> H{Is Already Login?}
+  H -- No --> I{Have account?}
+  I -- Yes --> I1[Login] --> G
+  I -- No --> I2[Register] --> G
+  H -- Yes --> cont
+```
+
+Fallback (plain text):
+
+```
+Start -> Visit Storefront -> Browse Products -> Apply Filters -> View Product Details -> Add to Cart -> Open Cart -> Proceed to Checkout ->
+[Is Already Login?]
+  No -> [Have account?]
+    Yes -> Login -> back to Proceed to Checkout
+    No  -> Register -> back to Proceed to Checkout
+  Yes -> Continue to Payment
+```
+
+### Customer Flow - Checkout & Payment
+
+```mermaid
+flowchart TD
+  start(Start)
+  endNode(End)
+  start --> J{Payment Type}
+  J -- COD --> K[Place COD Order] --> L[Create Order]
+  J -- Online Transfer --> M{Has Payment Method?}
+  M -- No --> N[Add Payment Method] --> M
+  M -- Yes --> O[Select Your Payment Account]
+  O --> P[System shows matching Company Account]
+  P --> Q[Enter Transfer Info<br/>txn id and your account]
+  Q --> R[Upload Payment Screenshot]
+  R --> S[Place Online Transfer Order]
+  S --> L[Create Order] --> endNode
+```
+
+Fallback (plain text):
+
+```
+Start -> [Payment Type]
+  COD -> Place COD Order -> Create Order -> End
+  Online Transfer -> [Has Payment Method?]
+    No -> Add Payment Method -> [Has Payment Method?]
+    Yes -> Select Your Payment Account -> System shows matching Company Account -> Enter Transfer Info -> Upload Payment Screenshot -> Place Online Transfer Order -> Create Order -> End
+```
+
+### Admin Flow
+
+```mermaid
+flowchart TD
+  start(Start)
+  endNode(End)
+  start --> A[Visit Admin]
+  A[Visit Admin] --> B{Is Already Login?}
+  B -- No --> C[Login]
+  C --> D[Load Admin Dashboard]
+  B -- Yes --> D
+
+  %% Dashboard and management
+  D --> E[Products Management]
+  D --> F[Orders Management]
+  D --> G[Admin User Management]
+  D --> H[Manage Company Accounts]
+
+  %% Products
+  E --> E1[List Products]
+  E --> E2[Create/Edit Product]
+  E --> E3[Toggle disabled/outOfStock]
+
+  %% Orders
+  F --> F1[List Orders]
+  F --> F2[View/Update Status]
+
+  %% Admin User Management
+
+  %% Manage Company Accounts
+
+  D --> endNode
+```
+
+Fallback (plain text):
+
+```
+Visit Admin -> [Authenticated?]
+  No -> Login (POST /api/auth/login) -> Load Admin Dashboard
+  Yes -> Load Admin Dashboard
+
+Dashboard -> Products Management
+Dashboard -> Orders Management
+Dashboard -> Users Management
+Dashboard -> Company Accounts
+Dashboard -> Files/Uploads
+
+Products: List (GET /api/admin/products), Create/Edit (POST/PUT), Toggle Status
+Orders:   List (GET /api/admin/orders), Update Status (PATCH /api/admin/orders/:id/status)
+Users:    List/Create/Update
+Accounts: List (GET /api/admin/company-accounts/admin), Create (POST), Update merge (PATCH), Delete (DELETE)
+Files:    Upload (POST /api/upload/image)
+```
+
+Tip: If Mermaid doesn’t render in your viewer, paste the code blocks into `https://mermaid.live` or enable a Mermaid renderer (e.g., VS Code "Markdown Preview Mermaid Support").
+
 ---
 
 ## CHAPTER 1: INTRODUCTION

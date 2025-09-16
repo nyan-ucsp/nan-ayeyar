@@ -56,9 +56,7 @@ const getAvailableActions = (currentStatus: OrderStatus) => {
       );
       break;
     case 'RETURNED':
-      actions.push(
-        { status: 'REFUNDED', label: 'Process Refund', variant: 'danger' as const, icon: <DollarSign className="h-4 w-4 mr-2" /> }
-      );
+      // Refund is handled via dedicated refund form button for online transfers
       break;
     case 'CANCELED':
       // Only allow refund for cancelled online transfer orders (not COD)
@@ -247,7 +245,7 @@ interface OrderDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   order: Order | null;
-  onStatusUpdate: (orderId: string, status: OrderStatus) => void;
+  onStatusUpdate: (orderId: string, status: OrderStatus, refundData?: { amount: number; reason: string }) => void;
 }
 
 const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
@@ -260,6 +258,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   const [showRefundForm, setShowRefundForm] = useState(false);
   const [refundAmount, setRefundAmount] = useState('');
   const [refundReason, setRefundReason] = useState('');
+  const [refundError, setRefundError] = useState<string | null>(null);
 
   const handleStatusUpdate = async (newStatus: OrderStatus) => {
     if (!order) return;
@@ -279,13 +278,22 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
   const handleRefund = async () => {
     if (!order || !refundAmount || !refundReason) return;
+    const amountNum = parseFloat(refundAmount);
+    if (isNaN(amountNum) || amountNum <= 0 || amountNum > order.total) {
+      setRefundError(`Amount must be between 0 and ${order.total}`);
+      return;
+    }
     
     setIsUpdating(true);
     try {
-      await onStatusUpdate(order.id, 'REFUNDED');
+      await onStatusUpdate(order.id, 'REFUNDED', {
+        amount: amountNum,
+        reason: refundReason,
+      });
       setShowRefundForm(false);
       setRefundAmount('');
       setRefundReason('');
+      setRefundError(null);
       onClose();
     } catch (error) {
       console.error('Failed to process refund:', error);
@@ -554,11 +562,19 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   <input
                     type="number"
                     step="0.01"
+                    min={0}
+                    max={order.total}
                     value={refundAmount}
-                    onChange={(e) => setRefundAmount(e.target.value)}
+                    onChange={(e) => {
+                      setRefundAmount(e.target.value);
+                      setRefundError(null);
+                    }}
                     placeholder={order.status === 'CANCELED' ? order.total.toString() : "0.00"}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
+                  {refundError && (
+                    <p className="mt-1 text-sm text-red-600">{refundError}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">

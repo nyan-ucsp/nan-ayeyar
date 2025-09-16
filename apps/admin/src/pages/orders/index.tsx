@@ -104,9 +104,13 @@ const OrdersPage: React.FC = () => {
     setIsDetailModalOpen(true);
   };
 
-  const handleStatusUpdate = async (orderId: string, newStatus: OrderStatus) => {
+  const handleStatusUpdate = async (
+    orderId: string,
+    newStatus: OrderStatus,
+    refundData?: { amount: number; reason: string }
+  ) => {
     try {
-      const updatedOrder = await adminApiClient.updateOrderStatus(orderId, newStatus);
+      const updatedOrder = await adminApiClient.updateOrderStatus(orderId, newStatus, refundData);
       setOrders(orders.map(order => 
         order.id === orderId ? updatedOrder : order
       ));
